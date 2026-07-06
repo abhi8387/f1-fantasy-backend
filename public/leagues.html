@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>F1 Fantasy - Leagues</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main>
+  <section class="card">
+    <h2>Leagues</h2>
+    <form id="createLeagueForm" class="inline-form">
+      <input type="text" id="leagueName" placeholder="League name" required />
+      <button type="submit">Create League</button>
+    </form>
+    <form id="joinLeagueForm" class="inline-form">
+      <input type="text" id="inviteCode" placeholder="Invite code" required />
+      <button type="submit">Join League</button>
+    </form>
+    <div id="leaguesList" class="grid"></div>
+  </section>
+</main>
+
+<script src="common.js"></script>
+<script src="leagues.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+% F1 Fantasy Backend
+% Generic itemize block -- adapt \item/\textbf to your resume template's own
+% \resumeProject / \resumeItem macros if it uses a custom class.
+% Reflects only what is actually built and verified as of Phase 2 (Auth) -
+% leagues, lineups, scoring, Kafka, live race sync, and leaderboards are on
+% the roadmap but not yet implemented. Do not claim those until they exist.
+
+\textbf{F1 Fantasy Backend} \hfill \textit{Node.js, Express, PostgreSQL, Prisma, Redis, JWT, Docker} \hfill \href{https://github.com/abhi8387/f1-fantasy-backend}{GitHub}
+\begin{itemize}
+    \item Migrated an existing Express/Sequelize/MySQL prototype to a production-oriented, feature-based architecture (controller/service/repository/validation per module) on PostgreSQL + Prisma, with centralized error handling, Winston structured logging, and Zod-validated environment configuration that fails fast on misconfiguration.
+    \item Built JWT authentication with short-lived access tokens and Redis-backed, revocable refresh tokens (instant logout via key deletion rather than a database session table), bcrypt password hashing, and a Redis-backed rate limiter shared across auth endpoints to resist brute-force attempts.
+    \item Containerized the stack with Docker Compose (PostgreSQL, Redis, backend service, healthchecks) for a reproducible local environment, with a documented phase-by-phase roadmap (leagues, fantasy lineups, transfer windows, event-driven scoring, Kafka, live race sync) for remaining feature modules.
+\end{itemize}
