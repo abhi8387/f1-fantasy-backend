@@ -1,15 +1,16 @@
 const app = require('./app');
 const env = require('./config/env');
 const logger = require('./config/logger');
-const prisma = require('./database/prisma');
+const { sequelize } = require('./database/models');
 const redisClient = require('./config/redis');
 
 let server;
 
 async function start() {
   try {
-    await prisma.$connect();
-    logger.info('PostgreSQL connected via Prisma');
+    await sequelize.authenticate();
+    await sequelize.sync();
+    logger.info('MySQL connected and synced via Sequelize');
 
     server = app.listen(env.PORT, () => {
       logger.info(`Server running on port ${env.PORT} [${env.NODE_ENV}]`);
@@ -23,7 +24,7 @@ async function start() {
 async function shutdown(signal) {
   logger.info(`${signal} received, shutting down gracefully`);
   if (server) server.close();
-  await prisma.$disconnect();
+  await sequelize.close();
   redisClient.disconnect();
   process.exit(0);
 }

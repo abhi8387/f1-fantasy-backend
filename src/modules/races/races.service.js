@@ -1,5 +1,6 @@
 const axios = require('axios');
-const prisma = require('../../database/prisma');
+const { Op } = require('sequelize');
+const { Race, Driver, RaceResult } = require('../../database/models');
 const env = require('../../config/env');
 const logger = require('../../config/logger');
 const formatIST = require('../../utils/formatIST');
@@ -50,20 +51,18 @@ async function syncRaces(year = 2024) {
   let count = 0;
   for (const session of data) {
     if (session.session_name !== 'Race') continue;
-    const existing = await prisma.race.findUnique({ where: { sessionKey: session.session_key } });
+    const existing = await Race.findOne({ where: { sessionKey: session.session_key } });
     if (existing) continue;
 
     const lineupOpensAt = await findPracticeOneStart(session.meeting_key);
 
-    await prisma.race.create({
-      data: {
-        sessionKey: session.session_key,
-        meetingKey: session.meeting_key,
-        raceName: session.session_name,
-        location: session.location,
-        date: new Date(session.date_start),
-        lineupOpensAt,
-      },
+    await Race.create({
+      sessionKey: session.session_key,
+      meetingKey: session.meeting_key,
+      raceName: session.session_name,
+      location: session.location,
+      date: new Date(session.date_start),
+      lineupOpensAt,
     });
     count++;
   }
@@ -78,18 +77,16 @@ async function syncDrivers(sessionKey) {
 
   let count = 0;
   for (const d of data) {
-    const existing = await prisma.driver.findUnique({
-      where: { driverNumber_sessionKey: { driverNumber: d.driver_number, sessionKey: Number(sessionKey) } },
+    const existing = await Driver.findOne({
+      where: { driverNumber: d.driver_number, sessionKey: Number(sessionKey) },
     });
     if (existing) continue;
-    await prisma.driver.create({
-      data: {
-        driverNumber: d.driver_number,
-        fullName: d.full_name,
-        teamName: d.team_name,
-        sessionKey: Number(sessionKey),
-        price: computeDriverPrice(d.full_name, d.team_name),
-      },
+    await Driver.create({
+      driverNumber: d.driver_number,
+      fullName: d.full_name,
+      teamName: d.team_name,
+      sessionKey: Number(sessionKey),
+      price: computeDriverPrice(d.full_name, d.team_name),
     });
     count++;
   }
@@ -99,26 +96,31 @@ async function syncDrivers(sessionKey) {
 
 function getRaces() {
   const currentYear = new Date().getFullYear();
-  return prisma.race.findMany({
-    where: { date: { gte: new Date(`${currentYear}-01-01`), lt: new Date(`${currentYear + 1}-01-01`) } },
-    orderBy: { date: 'asc' },
+  return Race.findAll({
+    where: {
+      date: {
+        [Op.gte]: new Date(`${currentYear}-01-01`),
+        [Op.lt]: new Date(`${currentYear + 1}-01-01`),
+      },
+    },
+    order: [['date', 'ASC']],
   });
 }
 
 function getResults(raceId) {
-  return prisma.raceResult.findMany({
+  return RaceResult.findAll({
     where: { raceId },
-    include: { driver: true },
-    orderBy: { position: 'asc' },
+    include: [{ model: Driver, as: 'driver' }],
+    order: [['position', 'ASC']],
   });
 }
 
 function getDrivers(sessionKey) {
-  return prisma.driver.findMany({ where: { sessionKey: Number(sessionKey) } });
+  return Driver.findAll({ where: { sessionKey: Number(sessionKey) } });
 }
 
 async function getCountdown(raceId) {
-  const race = await prisma.race.findUnique({ where: { id: raceId } });
+  const race = await Race.findByPk(raceId);
   if (!race) throw ApiError.notFound('Race not found');
 
   const now = new Date();

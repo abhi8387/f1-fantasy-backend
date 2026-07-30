@@ -1,13 +1,15 @@
 % F1 Fantasy Backend
 % Generic itemize block -- adapt \item/\textbf to your resume template's own
 % \resumeProject / \resumeItem macros if it uses a custom class.
-% Reflects only what is actually built and verified as of Phase 2 (Auth) -
-% leagues, lineups, scoring, Kafka, live race sync, and leaderboards are on
-% the roadmap but not yet implemented. Do not claim those until they exist.
+% Reflects what is actually built and verified end-to-end against live
+% MySQL/Redis/OpenF1. Kafka, live-race polling, and notifications are not
+% built - do not claim those until they exist.
 
-\textbf{F1 Fantasy Backend} \hfill \textit{Node.js, Express, PostgreSQL, Prisma, Redis, JWT, Docker} \hfill \href{https://github.com/abhi8387/f1-fantasy-backend}{GitHub}
+\textbf{F1 Fantasy Backend} \hfill \textit{Node.js, Express, MySQL, Sequelize, Redis, JWT, Docker} \hfill \href{https://github.com/abhi8387/f1-fantasy-backend}{GitHub}
 \begin{itemize}
-    \item Migrated an existing Express/Sequelize/MySQL prototype to a production-oriented, feature-based architecture (controller/service/repository/validation per module) on PostgreSQL + Prisma, with centralized error handling, Winston structured logging, and Zod-validated environment configuration that fails fast on misconfiguration.
-    \item Built JWT authentication with short-lived access tokens and Redis-backed, revocable refresh tokens (instant logout via key deletion rather than a database session table), bcrypt password hashing, and a Redis-backed rate limiter shared across auth endpoints to resist brute-force attempts.
-    \item Containerized the stack with Docker Compose (PostgreSQL, Redis, backend service, healthchecks) for a reproducible local environment, with a documented phase-by-phase roadmap (leagues, fantasy lineups, transfer windows, event-driven scoring, Kafka, live race sync) for remaining feature modules.
+    \item Built a feature-based fantasy sports backend (auth, leagues, races/drivers, lineups, scoring, leaderboard) on MySQL + Sequelize, with JWT access/refresh tokens (Redis-backed, revocable), bcrypt hashing, and a Redis-backed rate limiter on auth endpoints.
+    \item Synced live race and driver data from the OpenF1 API, including each race weekend's real Practice 1 session time to gate fantasy-lineup submissions until practice actually starts, rather than an arbitrary cutoff.
+    \item Designed a 5-driver squad system with talent-tier driver pricing (team competitiveness plus a star-driver premium) and a fixed budget, enforced server-side, so squad-building requires real trade-offs; a fixed points-by-finishing-position scoring table locks a race once results are entered.
+    \item Built a per-league leaderboard computed on read from race results and submitted lineups (captain picks doubled), and a plain HTML/CSS/vanilla-JS multi-page frontend served directly by the same Express app.
+    \item Containerized the full stack with Docker Compose (MySQL, Redis, backend, healthchecks) for a reproducible local environment.
 \end{itemize}

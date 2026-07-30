@@ -1,18 +1,19 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: f1-postgres
+  mysql:
+    image: mysql:8.0
+    container_name: f1-mysql
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${DB_USER:-f1admin}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-f1password}
-      POSTGRES_DB: ${DB_NAME:-f1_fantasy}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-f1password}
+      MYSQL_DATABASE: ${DB_NAME:-f1_fantasy}
+      MYSQL_USER: ${DB_USER:-f1admin}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-f1password}
     ports:
-      - '5433:5432'
+      - '3307:3306'
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-f1admin} -d ${DB_NAME:-f1_fantasy}']
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-u', 'root', '-p${DB_PASSWORD:-f1password}']
       interval: 5s
       timeout: 5s
       retries: 10
@@ -40,19 +41,23 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: postgresql://${DB_USER:-f1admin}:${DB_PASSWORD:-f1password}@postgres:5432/${DB_NAME:-f1_fantasy}?schema=public
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-f1_fantasy}
+      DB_USER: ${DB_USER:-f1admin}
+      DB_PASSWORD: ${DB_PASSWORD:-f1password}
       REDIS_URL: redis://redis:6379
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
       - ./src:/app/src
-      - ./prisma:/app/prisma
+      - ./public:/app/public
 
 # Kafka + Kafka UI are added in the phase that introduces the event bus (race/scoring/leaderboard events).
 
 volumes:
-  postgres_data:
+  mysql_data:
   redis_data:

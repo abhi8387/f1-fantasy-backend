@@ -2,7 +2,7 @@
 // tier formula, and force-open the Silverstone race lineup window for manual
 // testing (it already happened, so it'd normally be locked/read-only).
 require('dotenv').config();
-const prisma = require('../src/database/prisma');
+const { sequelize, Driver, Race } = require('../src/database/models');
 
 const TEAM_TIER_PRICE = {
   'Red Bull Racing': 22,
@@ -27,20 +27,20 @@ function computeDriverPrice(fullName, teamName) {
 }
 
 async function main() {
-  const drivers = await prisma.driver.findMany();
+  const drivers = await Driver.findAll();
   for (const d of drivers) {
     const price = computeDriverPrice(d.fullName, d.teamName);
     if (price !== d.price) {
-      await prisma.driver.update({ where: { id: d.id }, data: { price } });
+      await d.update({ price });
     }
   }
   console.log(`Repriced ${drivers.length} drivers`);
 
-  const silverstone = await prisma.race.findFirst({ where: { location: 'Silverstone' } });
+  const silverstone = await Race.findOne({ where: { location: 'Silverstone' } });
   if (silverstone) {
-    await prisma.race.update({
-      where: { id: silverstone.id },
-      data: { lineupOpensAt: new Date(Date.now() - 24 * 60 * 60 * 1000), isLocked: false },
+    await silverstone.update({
+      lineupOpensAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+      isLocked: false,
     });
     console.log(`Force-opened Silverstone (race id ${silverstone.id}) for testing`);
   } else {
@@ -48,4 +48,4 @@ async function main() {
   }
 }
 
-main().finally(() => prisma.$disconnect());
+main().finally(() => sequelize.close());

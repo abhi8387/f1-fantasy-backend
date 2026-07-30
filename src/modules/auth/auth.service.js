@@ -37,10 +37,11 @@ class AuthService {
   }
 
   async login(email, password) {
-    const user = await authRepository.findUserByEmail(email);
-    if (!user) {
+    const userInstance = await authRepository.findUserByEmail(email);
+    if (!userInstance) {
       throw ApiError.unauthorized('Invalid email or password');
     }
+    const user = userInstance.get({ plain: true });
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {

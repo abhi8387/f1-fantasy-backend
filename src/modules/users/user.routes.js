@@ -1,6 +1,6 @@
 const express = require('express');
 const { protect } = require('../auth/auth.middleware');
-const prisma = require('../../database/prisma');
+const { User } = require('../../database/models');
 const asyncHandler = require('../../utils/asyncHandler');
 const ApiResponse = require('../../utils/ApiResponse');
 
@@ -10,9 +10,8 @@ router.get(
   '/me',
   protect,
   asyncHandler(async (req, res) => {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: { id: true, username: true, email: true, role: true, createdAt: true },
+    const user = await User.findByPk(req.user.id, {
+      attributes: ['id', 'username', 'email', 'role', 'createdAt'],
     });
     new ApiResponse(200, user).send(res);
   })

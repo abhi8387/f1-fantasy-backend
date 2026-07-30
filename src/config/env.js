@@ -5,7 +5,11 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
 
-  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+  DB_HOST: z.string().min(1, 'DB_HOST is required'),
+  DB_PORT: z.coerce.number().int().positive().default(3306),
+  DB_NAME: z.string().min(1, 'DB_NAME is required'),
+  DB_USER: z.string().min(1, 'DB_USER is required'),
+  DB_PASSWORD: z.string().min(1, 'DB_PASSWORD is required'),
 
   REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
 

@@ -1,42 +1,23 @@
-const prisma = require('../../database/prisma');
+const { User } = require('../../database/models');
+
+const PUBLIC_ATTRS = ['id', 'username', 'email', 'role', 'createdAt'];
 
 class AuthRepository {
   async findUserByEmail(email) {
-    return prisma.user.findUnique({
-      where: { email },
-    });
+    return User.findOne({ where: { email } });
   }
 
   async findUserByUsername(username) {
-    return prisma.user.findUnique({
-      where: { username },
-    });
+    return User.findOne({ where: { username } });
   }
 
   async createUser(data) {
-    return prisma.user.create({
-      data,
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    const user = await User.create(data);
+    return User.findByPk(user.id, { attributes: PUBLIC_ATTRS });
   }
 
   async findUserById(id) {
-    return prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        role: true,
-        createdAt: true,
-      },
-    });
+    return User.findByPk(id, { attributes: PUBLIC_ATTRS });
   }
 }
 
